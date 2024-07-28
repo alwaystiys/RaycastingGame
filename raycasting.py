@@ -1,10 +1,17 @@
 import pygame as pg
 import math
 from settings import *
+import random
 
 class RayCasting:
     def __init__(self, game):
         self.game = game
+        self.randomColors = []
+
+        for ray in range(NUM_RAYS):
+            self.randomColors.append((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+
+
 
     def ray_cast(self):
         ox, oy = self.game.player.pos
@@ -57,6 +64,23 @@ class RayCasting:
                 depth = depth_vert
             else:
                 depth = depth_hor
+            
+            # remove fishbowl effect
+            depth *= math.cos(self.game.player.angle - ray_angle)
+
+
+            # projection
+            # 根据相似三角形定理
+            proj_height = SCREEN_DIST / (depth + 0.0001)
+
+            # draw walls
+            # color_value = (random.randint(0, 250), random.randint(0, 250), random.randint(0, 250))
+            # color = self.randomColors[ray]
+            color = [255 / (1 + depth ** 5 * 0.00002)] * 3
+            pg.draw.rect(self.game.screen, color, 
+                         (ray * SCALE, HALF_HEIGHT - proj_height // 2, SCALE, proj_height))
+            
+
 
             # draw for debug
             pg.draw.line(self.game.screen, 'yellow', (100 * ox, 100 * oy), 
@@ -68,3 +92,6 @@ class RayCasting:
 
     def update(self):
         self.ray_cast() 
+
+
+# fishbowl effect 墙壁凸出
